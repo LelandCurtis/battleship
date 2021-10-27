@@ -32,6 +32,7 @@ class Cell
     @fired_upon = true
     if !empty?
       ship.hit
+      return true
     end
     return nil
   end

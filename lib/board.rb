@@ -38,8 +38,8 @@ class Board
 
   # Tests if a coordinate is a valid placement on the board
   # Return true only if both coordinate valid and cell empty
-  def valid_coordinate?(coordinate)
-    @cells.keys.include?(coordinate) && @cells[coordinate].empty?
+  def valid_coordinate?(coordinate, empty = false)
+    @cells.keys.include?(coordinate) && (@cells[coordinate].empty? || empty) && ((empty && @cells[coordinate].fired_upon? == false) || !empty)
   end
 
   def valid_fire?(coordinate)
@@ -48,7 +48,7 @@ class Board
 
 
   # Tests if a ship placement is possible on the board
-  def valid_placement?(ship, coordinates)
+  def valid_placement?(ship, coordinates, empty = false)
 
     def parse_letters(strings)
       strings.map do |element|
@@ -67,7 +67,7 @@ class Board
     end
 
     coordinates.each do |coordinate| # Testing if the coordinates given are a valid position on the board
-      if !self.valid_coordinate?(coordinate)
+      if !self.valid_coordinate?(coordinate, empty)
         return false
       end
     end
