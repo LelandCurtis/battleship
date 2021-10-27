@@ -28,12 +28,8 @@ class User
     end
   end
 
-  def target(opponent_board, opponent_ships)
-
-    # First, find all hit coordinates that are not sunk
+  def target_near(opponent_board, opponent_ships)
     hit_cells = opponent_board.cells.values.find_all { |cell| cell.render == "H".blue.bold }
-    # If there are no hits, end the target method.
-    return nil if hit_cells.length == 0
     hit_coordinates = hit_cells.map { |cell| cell.coordinate }
 
     # Find all coordinates adjacent to hits, and haven't been fired upon
@@ -47,21 +43,96 @@ class User
     adjacent_coordinates = adjacent_coordinates.find_all { |coordinate| opponent_board.valid_fire?(coordinate) }
     adjacent_coordinates.uniq!
 
-    # create all possible arrays at all hit locations
-    # check if which arrays contain only hit hit_cells
-    # choose longest array(s)
-    # randomly select target array from possible arrays
-    # identify end cells to possibly target
-    # filter invalid hit_coordinates
-    # randomly choose one of end points
-
     # Use probability map to identify bast adjacent cell to target
     self.update_possible_ships(opponent_board, opponent_ships)
     unfired_cells = adjacent_coordinates.map{|coordinate| opponent_board.cells[coordinate]}
     max = unfired_cells.map{|cell| cell.possible_ships}.max
     possible_targets = unfired_cells.find_all{|cell| cell.possible_ships == max}
     chosen_coordinate = possible_targets.sample(1)[0].coordinate
+  end
 
+  def target_row(opponent_board, opponent_ships)
+    hit_cells = opponent_board.cells.values.find_all { |cell| cell.render == "H".blue.bold }
+    hit_coordinates = hit_cells.map { |cell| cell.coordinate }
+    possible_rows = []
+    # find longest possible ship length
+    max_length = opponent_ships.map{|ship| ship.length}.max - 1
+    # create an array of possible row length to try to build into Hit cells.
+    row_lengths = (2..max_length).to_a
+    # iterate through all row lengths and hit cells and build possible rows of each length from each cell
+    row_lengths.each do |row_length|
+      hit_coordinates.each do |coordinate|
+        possible_rows  << create_cell_array(coordinate, row_length, 'up')
+        possible_rows  << create_cell_array(coordinate, row_length, 'down')
+        possible_rows  << create_cell_array(coordinate, row_length, 'left')
+        possible_rows  << create_cell_array(coordinate, row_length, 'right')
+      end
+    end
+
+    # test if possible_row fits entirely in hit cells
+    rows = possible_rows.find_all do |coordinates|
+      # clean possible rows to remove invalid coordinates
+      coordinates2 = coordinates.find_all do |coordinate|
+         opponent_board.valid_coordinate?(coordinate, true)
+      end
+      # are all cells in row cells with hits?
+      coordinates2.find_all {|coordinate|opponent_board.cells[coordinate].render == "H".blue.bold}.length == coordinates.length
+    end
+    # if rows are empty (single cell or multiple single cells) return nil
+    if rows.length == 0
+      return target_near(opponent_board, opponent_ships)
+    end
+    # rows now hold all possible rows of coordinates within my hit cells
+    # find longest row
+    max_row_length = rows.map{|row| row.length}.max
+    possible_rows = rows.find_all{|row| row.length == max_row_length}
+    chosen_row = possible_rows.sample(1)[0]
+    # get next cells on edge of row
+
+    # identify if up/down or left right
+
+    #split coordiantes into letters and numbers
+    letters = []
+    numbers = []
+    chosen_row = chosen_row.sort
+    chosen_row.each do |row|
+      letters << row[0]
+      numbers << row[1..].to_i
+    end
+
+    # collect end coordinates
+    possible_coordinates = []
+    if letters.everything_same?
+      possible_coordinates << letters[0] + (numbers[0] - 1).to_s
+      possible_coordinates << letters[-1] + (numbers[-1] + 1).to_s
+    else
+      possible_coordinates << (letters[0].ord - 1).chr + (numbers[0]).to_s
+      possible_coordinates << (letters[-1].ord + 1).chr + (numbers[-1]).to_s
+    end
+    # if up/down, sort coordinates, take first and last coordinates, then subtract 1 from first and add 1 to last to create new coordinates.
+    # if left/right, sort coordinates, take first and last coordinates, then subtract 1 letter from first and add 1 letter to last to create new coordinates.
+
+    possible_coordinates = possible_coordinates.find_all { |coordinate| opponent_board.valid_fire?(coordinate) }
+    possible_coordinates.uniq!
+
+    # Use probability map to identify bast adjacent cell to target
+    self.update_possible_ships(opponent_board, opponent_ships)
+    unfired_cells = possible_coordinates.map{|coordinate| opponent_board.cells[coordinate]}
+    max = unfired_cells.map{|cell| cell.possible_ships}.max
+    possible_targets = unfired_cells.find_all{|cell| cell.possible_ships == max}
+
+    # if possible_targets == []
+    #   return target_near(opponent_board, opponent_ships)
+    # end
+    chosen_coordinate = possible_targets.sample(1)[0].coordinate
+  end
+
+  def target(opponent_board, opponent_ships)
+    # First, find all hit coordinates that are not sunk
+    hit_cells = opponent_board.cells.values.find_all { |cell| cell.render == "H".blue.bold }
+    # If there are no hits, end the target method.
+    return nil if hit_cells.length == 0
+    self.target_row(opponent_board, opponent_ships)
   end
 
 

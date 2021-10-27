@@ -6,6 +6,7 @@ describe User do
 
   before(:each) do
     @default_ships = [Ship.new("Cruiser", 3), Ship.new("Submarine", 2)]
+    @long_ship = Ship.new("long", 4)
     @width = 4
     @height = 4
     dimensions = [@width, @length]
@@ -55,6 +56,19 @@ describe User do
       safe_cell = cells.pop
       cells.each{|cell| cell.fire_upon}
       expect(@steve.target(@steve.board, @default_ships)).to eq(safe_cell.coordinate)
+    end
+    it 'returns a coordinate using row that has not been fired upon and is on the board' do
+      @steve.board.place(@long_ship, ['D1','D2','D3', 'D4'])
+      @steve.board.cells['D3'].fire_upon
+      @steve.board.cells['D4'].fire_upon
+      expect(@steve.target(@steve.board, @default_ships)).to eq('D2')
+    end
+    xit 'returns a coordinate using row that has not been fired upon and is on the board v2' do
+      @steve.board.place(@long_ship, ['C1','C2','C3', 'C4'])
+      @steve.board.cells['C2'].fire_upon
+      @steve.board.cells['C3'].fire_upon
+      @steve.board.cells['C4'].fire_upon
+      expect(@steve.target(@steve.board, @default_ships)).to eq('D2')
     end
   end
 
