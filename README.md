@@ -1,4 +1,4 @@
-# battleship
+# Battleship
 
 Play the classic game battleship in your Terminal! 
 
