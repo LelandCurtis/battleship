@@ -14,4 +14,5 @@ Play the classic game battleship in your Terminal!
 
 ![image](https://user-images.githubusercontent.com/15107515/155770069-d14ddb6e-f1f6-4d15-8296-c6ce5addb772.png)
 
-![image](https://user-images.githubusercontent.com/15107515/155770227-74f5485b-515c-41df-a2c9-9c75b0e9b5e7.png)
+![image](https://user-images.githubusercontent.com/15107515/155770281-6be5f315-049a-4e34-b647-e7a224809585.png)
+
